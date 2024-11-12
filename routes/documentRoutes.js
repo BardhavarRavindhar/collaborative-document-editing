@@ -1,31 +1,24 @@
 const express = require('express');
-const {
-  createDocument,
-  getDocuments,
-  getDocumentById,
-  updateDocument,
-  deleteDocument
-} = require('../controllers/documentController');
-const authMiddleware = require('../middlewares/authMiddleware');
-const checkPermissionMiddleware = require('../middlewares/permissionMiddleware');
 const router = express.Router();
+const authMiddleware = require('../middlewares/authMiddleware');
+const checkPermissionMiddleware = require('../middlewares/checkPermissionMiddleware');
+const { documentController } = require('../controllers');
 
-// Protect all document routes with authentication middleware
-router.use(authMiddleware);
+// Logging middleware to log each request
+const logRequestMiddleware = (req, res, next) => {
+  console.log(`[${new Date().toISOString()}] ${req.method} request to ${req.originalUrl}`);
+  next();  // Ensure next() is called to proceed to the next middleware or route handler
+};
 
-// Create a new document
-router.post('/', createDocument);
+// Add logging for each route with proper ordering
+router.post('/', authMiddleware, logRequestMiddleware, documentController.createDocument);
 
-// Get all documents accessible by the authenticated user
-router.get('/', getDocuments);
+router.get('/', authMiddleware, logRequestMiddleware, documentController.getDocuments);
 
-// Get a document by ID with READ permission
-router.get('/:id', checkPermissionMiddleware('READ'), getDocumentById);
+router.get('/:id', authMiddleware, checkPermissionMiddleware('READ'), logRequestMiddleware, documentController.getDocumentById);
 
-// Update a document by ID with WRITE permission
-router.put('/:id', checkPermissionMiddleware('WRITE'), updateDocument);
+router.put('/:id', authMiddleware, checkPermissionMiddleware('WRITE'), logRequestMiddleware, documentController.updateDocument);
 
-// Delete a document by ID with WRITE permission
-router.delete('/:id', checkPermissionMiddleware('WRITE'), deleteDocument);
+router.delete('/:id', authMiddleware, checkPermissionMiddleware('WRITE'), logRequestMiddleware, documentController.deleteDocument);
 
 module.exports = router;

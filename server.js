@@ -2,8 +2,10 @@ const express = require('express');
 const { createServer } = require('http');
 const socketIo = require('socket.io');
 const dotenv = require('dotenv');
+const cors = require('cors');
 const connectDB = require('./config/db');
 const errorHandler = require('./middlewares/errorHandler');
+
 
 dotenv.config();
 connectDB();
@@ -36,14 +38,14 @@ app.use(express.json());
 // Route imports
 const authRoutes = require('./routes/authRoutes');
 const documentRoutes = require('./routes/documentRoutes');
-const commentRoutes = require('./routes/commentRoutes');
+// const commentRoutes = require('./routes/commentRoutes');
 const logger = require('./config/logger');
-const authMiddleware = require('./middlewares/authMiddleware');
+// const authMiddleware = require('./middlewares/authMiddleware');
 
 // Route usage
 app.use('/api/auth', authRoutes);
-app.use('/api/documents', authMiddleware, documentRoutes);
-app.use('/api', authMiddleware, commentRoutes); // Comment routes may be nested under /api for consistency
+app.use('/api/documents', documentRoutes);
+// app.use('/api', commentRoutes); 
 
 // Error handling middleware
 app.use(errorHandler);
